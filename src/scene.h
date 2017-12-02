@@ -5,6 +5,7 @@
 #include "texture.h"
 #include "shader.h"
 #include "camera.h"
+#include "orthocam.h"
 #include "model.h"
 #include "octree.h"
 #include "canvas.h"
@@ -17,6 +18,7 @@ typedef struct {
   GLuint shader;
   list_t *model_list, *texture_list, *coll_list;
   ex_fps_camera_t *fps_camera;
+  ex_ortho_camera_t *ortho_camera;
   ex_octree_t *coll_tree;
   int collision_built;
   vec3 *coll_vertices;

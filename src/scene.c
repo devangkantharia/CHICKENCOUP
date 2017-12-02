@@ -14,6 +14,7 @@ ex_scene_t* ex_scene_new(GLuint shader)
   s->texture_list = list_new();
 
   s->fps_camera = NULL;
+  s->ortho_camera = NULL;
 
   s->shader = shader;
 
@@ -108,6 +109,9 @@ void ex_scene_update(ex_scene_t *s, float delta_time)
   if (s->fps_camera)
     ex_fps_camera_update(s->fps_camera, s->shader);
 
+  if (s->ortho_camera)
+    ex_ortho_camera_update(s->ortho_camera, s->shader);
+
   // update models animations etc
   list_node_t *n = s->model_list;
   while (n->data != NULL) {
@@ -129,10 +133,12 @@ void ex_scene_draw(ex_scene_t *s)
   // enable main canvas
   ex_canvas_use(s->canvas);
 
-  if (s->fps_camera != NULL) {
+  if (s->fps_camera != NULL)
     ex_fps_camera_draw(s->fps_camera, s->shader);
-  }
-  
+ 
+  if (s->ortho_camera != NULL)
+    ex_ortho_camera_draw(s->ortho_camera, s->shader);
+
   ex_scene_render_models(s, s->shader, 0);
 
   int w, h;
@@ -227,6 +233,9 @@ void ex_scene_destroy(ex_scene_t *s)
   // cleanup cameras
   if (s->fps_camera != NULL)
     free(s->fps_camera);
+
+  if (s->ortho_camera != NULL)
+    free(s->ortho_camera);
 
   ex_canvas_destroy(s->canvas);
 

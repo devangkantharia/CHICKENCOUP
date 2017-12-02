@@ -8,13 +8,21 @@
 #include <emscripten/emscripten.h>
 #endif
 
+// engine stuffs
 #include "shader.h"
 #include "window.h"
 #include "scene.h"
+#include "iqm.h"
+#include "model.h"
+
+// non engine includes
+#include "player.h"
 
 // scene stuff
 GLuint shader;
 ex_scene_t *scene;
+ex_model_t *level;
+ex_ortho_camera_t *camera;
 
 // timestep
 const double phys_delta_time = 1.0 / 120.0;
@@ -29,6 +37,7 @@ int main()
 {
   // it begins
   ex_window_init(640, 480, "LD40");
+  last_frame_time = glfwGetTime();
 
   // main shader program
   shader = ex_shader_compile("data/shaders/shader.vs", "data/shaders/shader.fs");
@@ -36,7 +45,17 @@ int main()
   // init the scene
   scene = ex_scene_new(shader);
 
-  last_frame_time = glfwGetTime();
+  // load the first level
+  level = ex_iqm_load_model(scene, "data/level1.iqm", 1);
+  list_add(scene->model_list, level);
+
+  // setup a camera
+  const float size = 8.0f;
+  camera = ex_ortho_camera_new(0.0f, 0.0f, 0.0f, -size, size, -size, size);
+  scene->ortho_camera = camera;
+
+  // init the player
+  player_init(scene);
 
   // start game loop
 #ifdef __EMSCRIPTEN__
@@ -62,6 +81,9 @@ void do_frame()
   while (accumulator >= phys_delta_time) {
     ex_window_begin();
     
+    // update entities
+    player_update(phys_delta_time);
+
     // update the game scene
     ex_scene_update(scene, phys_delta_time);
 
@@ -76,5 +98,5 @@ void do_frame()
 
 void at_exit()
 {
-  
+
 }

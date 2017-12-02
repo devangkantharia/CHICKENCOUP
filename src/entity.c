@@ -193,7 +193,7 @@ void ex_entity_check_grounded(ex_entity_t *entity)
       vec3_sub(temp, e_position, entity->packet.intersect_point);
       temp[1] -= entity->packet.e_radius[1];
       if (temp[1] < VERY_CLOSE_DIST)
-        entity->position[1] = (entity->packet.intersect_point[1]+0.1f+entity->packet.e_radius[1]) * entity->packet.e_radius[1];
+        entity->position[1] = (entity->packet.intersect_point[1]+VERY_CLOSE_DIST+entity->packet.e_radius[1]) * entity->packet.e_radius[1];
         // entity->position[1] += 0.1f;
 
       entity->grounded = 1;

@@ -13,5 +13,11 @@ uniform sampler2D u_texture;
 
 void main()
 {
-  color = texture(u_texture, uv) * 0.2f;
+  vec3 sun_pos = vec3(0.0, 10.0, 5.0);
+  
+  vec3 light_dir = normalize(sun_pos - frag);
+  vec3 norm = normalize(normals);
+  
+  float diffuse = max(dot(norm, light_dir), 0.0);
+  color = texture(u_texture, uv) * diffuse;
 }
