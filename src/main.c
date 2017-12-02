@@ -45,12 +45,16 @@ int main()
   // init the scene
   scene = ex_scene_new(shader);
 
+  // add a sun
+  scene->sun = ex_dir_light_new((vec3){0.1f, 5.0f, 0.1f}, (vec3){0.5f, 0.5f, 0.5f}, 1);
+  
+
   // load the first level
   level = ex_iqm_load_model(scene, "data/level1.iqm", 1);
   list_add(scene->model_list, level);
 
   // setup a camera
-  const float size = 8.0f;
+  const float size = 10.0f;
   camera = ex_ortho_camera_new(0.0f, 0.0f, 0.0f, -size, size, -size, size);
   scene->ortho_camera = camera;
 

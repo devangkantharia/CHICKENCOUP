@@ -28,6 +28,9 @@ ex_scene_t* ex_scene_new(GLuint shader)
 
   ex_text_init();
   ex_sound_init();
+  ex_dir_light_init();
+
+  s->sun = NULL;
 
   int w, h;
   glfwGetFramebufferSize(display.window, &w, &h);
@@ -126,6 +129,18 @@ void ex_scene_update(ex_scene_t *s, float delta_time)
 
 void ex_scene_draw(ex_scene_t *s)
 {
+  glEnable(GL_CULL_FACE);
+  glCullFace(GL_BACK);
+
+  // dirlight depth map
+  if (s->sun) {
+    if (s->ortho_camera != NULL)
+      memcpy(s->sun->cposition, s->ortho_camera->position, sizeof(vec3));
+
+    ex_dir_light_begin(s->sun);
+    ex_scene_render_models(s, s->sun->shader, 1);
+  }
+
   // main shader render pass
   glUseProgram(s->shader);
   glDisable(GL_BLEND);
@@ -138,6 +153,13 @@ void ex_scene_draw(ex_scene_t *s)
  
   if (s->ortho_camera != NULL)
     ex_ortho_camera_draw(s->ortho_camera, s->shader);
+
+  if (s->sun != NULL) {
+    glUniform1i(glGetUniformLocation(s->shader, "u_dir_active"), 1);
+    ex_dir_light_draw(s->sun, s->shader);
+  } else {
+    glUniform1i(glGetUniformLocation(s->shader, "u_dir_active"), 0);
+  }
 
   ex_scene_render_models(s, s->shader, 0);
 
@@ -154,7 +176,7 @@ void ex_scene_render_models(ex_scene_t *s, GLuint shader, int shadows)
     ex_model_t *m = (ex_model_t*)n->data;
     s->modelc++;
 
-    if ((shadows && m->is_shadow) || !shadows)
+    // if ((shadows && m->is_shadow) || !shadows)
       ex_model_draw(m, shader);
 
     if (n->next != NULL)

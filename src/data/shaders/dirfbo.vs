@@ -8,17 +8,10 @@ layout (location = 4) in vec4 in_color;
 layout (location = 5) in vec4 in_boneindex;
 layout (location = 6) in vec4 in_boneweights;
 
-out vec2 uv;
-out vec3 frag;
-out vec3 normals;
-out vec4 frag_light_pos;
-
+uniform mat4 u_light_transform;
 uniform mat4 u_model;
-uniform mat4 u_view;
-uniform mat4 u_projection;
 uniform mat4 u_bone_matrix[200];
 uniform bool u_has_skeleton;
-uniform mat4 u_dir_transform;
 
 void main()
 {
@@ -34,9 +27,5 @@ void main()
     transform = u_model * skeleton;
   }
 
-  gl_Position = u_projection * u_view * transform * vec4(in_position, 1.0);
-  uv = in_uv;
-  normals = mat3(transpose(inverse(transform))) * in_normals;
-  frag = vec3(u_model * vec4(in_position, 1.0f));
-  frag_light_pos = u_dir_transform * vec4(frag, 1.0);
+  gl_Position = u_light_transform * transform * vec4(in_position, 1.0);
 }

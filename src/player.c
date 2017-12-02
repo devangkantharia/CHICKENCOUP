@@ -26,7 +26,7 @@ void player_init(ex_scene_t *s)
   list_add(scene->model_list, player_model);
 
   // init entity stuff
-  player_entity = ex_entity_new(scene, (vec3){0.5f, 0.5f, 0.5f});
+  player_entity = ex_entity_new(scene, (vec3){0.4f, 0.4f, 0.4f});
   memcpy(player_entity->position, &spawn_locations, sizeof(vec3));
 }
 
@@ -44,10 +44,10 @@ void player_update(double dt)
   if (player_entity->grounded) {
     // grounded, apply friction
     player_velocity -= player_velocity * player_friction * dt;
-    player_move_speed = 2000.0f;
+    player_move_speed = 2250.0f;
   } else {
     // not grounded, reduce move speed
-    player_move_speed = 20.0f;
+    player_move_speed = 100.0f;
   }
 
   // apply gravity
@@ -81,13 +81,13 @@ void player_update(double dt)
   memcpy(temp, player_entity->velocity, sizeof(vec3));
   temp[1] = 0.0f;
   float current_speed = vec3_len(temp);
-  current_speed = MAX(4.0f, current_speed);
+  current_speed = MAX(5.0f, MIN(15.0f, current_speed));
 
   // turn left and right
   if (ex_keys_down[GLFW_KEY_D])
-    player_model->rotation[1] += (35.0f * current_speed) * dt;
+    player_model->rotation[1] += (30.0f * current_speed) * dt;
   if (ex_keys_down[GLFW_KEY_A])
-    player_model->rotation[1] -= (35.0f * current_speed) * dt;
+    player_model->rotation[1] -= (30.0f * current_speed) * dt;
 
   if (ex_keys_down[GLFW_KEY_SPACE] && player_entity->grounded)
     player_entity->velocity[1] = 20.0f;

@@ -9,6 +9,7 @@
 #include "model.h"
 #include "octree.h"
 #include "canvas.h"
+#include "dirlight.h"
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -22,6 +23,7 @@ typedef struct {
   ex_octree_t *coll_tree;
   int collision_built;
   vec3 *coll_vertices;
+  ex_dir_light_t *sun;
   size_t coll_vertices_last;
   vec3 gravity;
   int modelc;
