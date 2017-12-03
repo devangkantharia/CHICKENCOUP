@@ -12,7 +12,7 @@ ex_model_t* ex_model_new()
   memset(m->rotation, 0, sizeof(vec3));
   m->scale     = 1.0f;
   m->is_shadow = 1;
-  m->is_lit    = 1;
+  m->is_lit    = -1;
   m->use_transform  = 0;
   mat4x4_identity(m->transform);
 
@@ -33,7 +33,8 @@ void ex_model_update(ex_model_t *m, float delta_time)
     memcpy(mesh->position, m->position, sizeof(vec3));
     memcpy(mesh->rotation, m->rotation, sizeof(vec3));
     mesh->scale  = m->scale;
-    mesh->is_lit = m->is_lit;
+    if (mesh->is_lit > -1)
+      mesh->is_lit = m->is_lit;
 
     mesh->use_transform = m->use_transform;
     if (m->use_transform)

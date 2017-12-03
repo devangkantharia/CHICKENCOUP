@@ -144,7 +144,10 @@ void ex_scene_draw(ex_scene_t *s)
   // main shader render pass
   glUseProgram(s->shader);
   glDisable(GL_BLEND);
-
+#ifndef __EMSCRIPTEN__
+  glEnable(GL_MULTISAMPLE);
+#endif
+  
   // enable main canvas
   ex_canvas_use(s->canvas);
 

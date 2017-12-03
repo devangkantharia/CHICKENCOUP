@@ -4,7 +4,7 @@
 
 ex_model_t *ex_iqm_load_model(ex_scene_t *scene, const char *path, int keep_vertices)
 {
-  printf("Loading IQM model file %s\n", path);
+  // printf("Loading IQM model file %s\n", path);
 
   // read in the file data
   uint8_t *data = (uint8_t*)io_read_file(path, "rb", NULL);
@@ -237,8 +237,34 @@ ex_model_t *ex_iqm_load_model(ex_scene_t *scene, const char *path, int keep_vert
     // create mesh
     ex_mesh_t *m = ex_mesh_new(vert, meshes[i].num_vertexes, ind, meshes[i].num_triangles*3, 0);
 
+    // cheap and horrible bleh
+    if (tex_name[0] == 'a') {
+      m->is_lit = 0;
+    }
+
+    // goal bounds
+    if (tex_name[0] == '!') {
+      memset(model->end_bounds.min, 0, sizeof(vec3));
+      memset(model->end_bounds.max, 0, sizeof(vec3));
+
+      // calculate the aabb bounds
+      size_t size = meshes[i].num_triangles*3;
+      for (int j=0; j<size; j++) {
+        if (!j) {
+          memcpy(model->end_bounds.min, vert[ind[j]].position, sizeof(vec3));
+          memcpy(model->end_bounds.max, vert[ind[j]].position, sizeof(vec3));
+        }
+
+        vec3_min(model->end_bounds.min, model->end_bounds.min, vert[ind[j]].position);
+        vec3_max(model->end_bounds.max, model->end_bounds.max, vert[ind[j]].position);
+      }
+
+      ex_mesh_destroy(m);
+      continue;
+    }
+
     // store vertices
-    if (keep_vertices) {
+    if (keep_vertices && tex_name[0] != 'a') {
       size_t size = meshes[i].num_triangles*3;
       for (int j=0; j<size; j++)
         memcpy(&vis_vertices[vis_len+j], vert[ind[j]].position, sizeof(vec3));
@@ -262,7 +288,7 @@ ex_model_t *ex_iqm_load_model(ex_scene_t *scene, const char *path, int keep_vert
     ex_scene_add_collision(scene, model);
   }
 
-  printf("Finished loading IQM model %s\n", path);
+  // printf("Finished loading IQM model %s\n", path);
   free(vertices);
   free(indices);
   free(vis_vertices);

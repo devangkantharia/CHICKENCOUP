@@ -15,6 +15,18 @@ ex_entity_t* ex_entity_new(ex_scene_t *scene, vec3 radius)
   memset(e->velocity, 0,      sizeof(vec3));
   e->scene = scene;
   e->grounded = 0;
+
+  memset(e->packet.r3_velocity, 0, sizeof(vec3));
+  memset(e->packet.r3_position, 0, sizeof(vec3));
+  memset(e->packet.e_radius, 0, sizeof(vec3));
+  memset(e->packet.e_velocity, 0, sizeof(vec3));
+  memset(e->packet.e_norm_velocity, 0, sizeof(vec3));
+  memset(e->packet.e_base_point, 0, sizeof(vec3));
+  memset(e->packet.intersect_point, 0, sizeof(vec3));
+  e->packet.found_collision = 0;
+  e->packet.nearest_distance = 0.0f;
+  e->packet.depth = 0;
+
   return e;
 }
 
@@ -211,4 +223,10 @@ void ex_entity_update(ex_entity_t *entity, double dt)
   ex_entity_collide_and_slide(entity, gravity);
   vec3_scale(entity->velocity, entity->velocity, 1.0f / dt);
   ex_entity_check_grounded(entity);
+}
+
+void ex_entity_destroy(ex_entity_t *e)
+{
+  free(e);
+  e = NULL;  
 }

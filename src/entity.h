@@ -25,4 +25,6 @@ void ex_entity_check_grounded(ex_entity_t *entity);
 
 void ex_entity_update(ex_entity_t *entity, double dt);
 
+void ex_entity_destroy(ex_entity_t *e);
+
 #endif // EX_ENTITY_H

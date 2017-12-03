@@ -36,7 +36,8 @@ typedef struct {
 
   vec3 position, rotation;
   float scale;
-  uint8_t is_lit, is_shadow;
+  uint8_t is_shadow;
+  int is_lit;
 
   ex_anim_t   *current_anim;
   float    current_time;
@@ -53,6 +54,8 @@ typedef struct {
   size_t num_vertices;
 
   ex_octree_t *octree_data;
+
+  ex_rect_t end_bounds;
 } ex_model_t;
 
 ex_model_t* ex_model_new();

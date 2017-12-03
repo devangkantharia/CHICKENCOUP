@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SHADOW_MAP_SIZE 1024
-#define DIR_FAR_PLANE   50
-#define DIR_LIGHT_SIZE  15
+#define SHADOW_MAP_SIZE 2048*2
+#define DIR_FAR_PLANE   200
+#define DIR_LIGHT_SIZE  35
 mat4x4 dir_shadow_projection;
 GLuint ex_dir_light_shader;
 
@@ -76,9 +76,9 @@ void ex_dir_light_begin(ex_dir_light_t *l)
 
 void ex_dir_light_draw(ex_dir_light_t *l, GLuint shader)
 {
-  glActiveTexture(GL_TEXTURE8);
+  glActiveTexture(GL_TEXTURE3);;
   glBindTexture(GL_TEXTURE_2D, l->depth_map);
-  glUniform1i(glGetUniformLocation(shader, "u_dir_depth"), 8);
+  glUniform1i(glGetUniformLocation(shader, "u_dir_depth"), 3);
 
   vec3 temp;
   vec3_add(temp, l->cposition, l->position);

@@ -42,14 +42,14 @@ cleanup:
 
 ex_source_t* ex_sound_load_source(const char *path, ex_sound_e format, int loop)
 {
-  printf("Loading audio file %s\n", path);
+  // printf("Loading audio file %s\n", path);
   int channels, rate;
   short *data = NULL;
   int32_t len = 0;
 
   // decode ogg data
   if (format == EX_SOUND_OGG) {
-    printf("Decoding ogg format\n");
+    // printf("Decoding ogg format\n");
     len = stb_vorbis_decode_filename(path, &channels, &rate, &data);
     
     // loading failed
