@@ -26,10 +26,14 @@
 // scene stuff
 GLuint shader;
 ex_scene_t *scene;
-ex_model_t *level = NULL, *menu_text = NULL;
+ex_model_t *level = NULL, *menu_text = NULL, *egg = NULL;
 ex_ortho_camera_t *camera;
-ex_font_t *raleway;
 
+ex_source_t *sound_ding;
+
+int bby_alive = 0;
+
+int level_reset = 0;
 int level_index = 0;
 const char *levels[] = {
   "data/level1.iqm",
@@ -52,7 +56,7 @@ void next_level();
 int main()
 {
   // it begins
-  ex_window_init(640*1.5, 480*1.5, "LD40");
+  ex_window_init(640, 480, "CHICKEN COUP");
   last_frame_time = glfwGetTime();
 
   // main shader program
@@ -62,7 +66,7 @@ int main()
   scene = ex_scene_new(shader);
 
   // add a sun
-  scene->sun = ex_dir_light_new((vec3){0.4f, 30.0f, -20.0f}, (vec3){0.5f, 0.5f, 0.5f}, 1);
+  scene->sun = ex_dir_light_new((vec3){0.4f, 30.0f, -20.0f}, (vec3){0.4f, 0.4f, 0.4f}, 1);
 
   // load the first (menu) level
   level = ex_iqm_load_model(scene, "data/menu.iqm", 1);
@@ -85,13 +89,14 @@ int main()
   player_init(scene);
   bby_manager_init(scene, 0);
 
-  // add some bby chickens to first level
-  for (int i=0; i<8; i++)
-    bby_new((vec3){-1.0f, 5.0f+i*1.0f, cos(i)});
-
-  raleway = ex_text_load_font("data/fonts/raleway.ttf", 48);
-
+  // sounds
   ex_sound_master_volume(1.0f);
+  sound_ding = ex_sound_load_source("data/sound/ding.ogg", EX_SOUND_OGG, 0);
+  alSourcef(sound_ding->id, AL_GAIN, 0.5);
+
+  // add some bby chickens to first level
+  for (int i=0; i<3; i++)
+    bby_new((vec3){-1.0f, 5.0f+i*1.0f, cos(i)});
 
   // start game loop
 #ifdef __EMSCRIPTEN__
@@ -130,6 +135,28 @@ void do_frame()
     // update the game scene
     ex_scene_update(scene, phys_delta_time);
 
+    // handle egg lol
+    if (egg != NULL && player_entity != NULL) {
+      // spin dat egg
+      egg->rotation[1] += 100.0f * phys_delta_time;
+
+      // distance to egg
+      vec3 temp;
+      vec3_sub(temp, egg->position, player_entity->position);
+      float dist = vec3_len(temp);
+
+      // collect egg
+      if (dist < 1.0f) {
+        // play some funky sound
+        alSourcePlay(sound_ding->id);
+
+        // remove egg model
+        scene->model_list = list_remove(scene->model_list, egg);
+        ex_model_destroy(egg);
+        egg = NULL;
+      }
+    }
+
     if (changing_level)
       next_level();
 
@@ -140,9 +167,11 @@ void do_frame()
   if (player_entity->position[1] < -25.0f) {
     if (level_index > 0)
       level_index--;
+
     
     player_entity->position[1] = -20.0f;
     player_entity->velocity[1] = 0.0f;
+    level_reset = 1;
     next_level();
   }
 
@@ -160,6 +189,9 @@ void at_exit()
 // hard-coded fustercluck of shit, turn back now
 void next_level()
 {
+  if (level_index == 3)
+    level_index = 0;
+
   if (!changing_level) {
     changing_level = 1;
 
@@ -171,6 +203,14 @@ void next_level()
     scene->coll_list = list_new();
     scene->collision_built = 0;
     scene->coll_vertices_last = 0;
+  
+    if (egg != NULL) {
+      scene->model_list = list_remove(scene->model_list, egg);
+      ex_model_destroy(egg);
+      egg = NULL;
+    }
+
+    bby_alive = 0;
   }
 
   if (level == NULL)
@@ -194,14 +234,19 @@ void next_level()
     scene->model_list = list_remove(scene->model_list, level);
     ex_model_destroy(level);
     
+    // reset bby chickens
+    for (int i=0; i<MAX_BBY; i++) {
+      if (bby_chickens[i] != NULL && (!bby_chickens[i]->spawner || !level_reset)) {
+        bby_alive++;
+      }
+    }
+    bby_manager_init(scene, 1);
+
     level = ex_iqm_load_model(scene, levels[level_index++], 1);
     level->position[1] = -50.0f;
     ex_model_update(level, phys_delta_time);
     list_add(scene->model_list, level);
     changing_level = 2;
-
-    // reset bby chickens
-    bby_manager_init(scene, 1);
   
     // destroy menu models
     if (menu_text != NULL) {
@@ -221,6 +266,13 @@ void next_level()
     player_poo_timer = (double)glfwGetTime();
     player_velocity = 0.0f;
     level->position[1] += 100.0f * phys_delta_time;
+
+    for (int i=0; i<MAX_BBY; i++) {
+      if (bby_chickens[i] != NULL) {
+        bby_chickens[i]->entity->velocity[1] = 0.0f;
+        bby_chickens[i]->entity->position[1] = 35.0f;
+      }
+    }
   }
 
   if (changing_level == 2 && level->position[1] >= 0.0f) {
@@ -228,7 +280,12 @@ void next_level()
     changing_level = 0;
 
     // add some bby chickens
-    for (int i=0; i<5; i++) 
+    for (int i=0; i<bby_alive; i++) 
       bby_new((vec3){-1.0f, 50.0f+i*1.0f, cos(i)});
+
+    if (egg != NULL)
+      list_add(scene->model_list, egg);
+
+    level_reset = 0;
   }
 }

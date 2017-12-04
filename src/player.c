@@ -35,7 +35,7 @@ void player_init(ex_scene_t *s)
   list_add(scene->model_list, player_model);
 
   // init entity stuff
-  player_entity = ex_entity_new(scene, (vec3){0.5f, 0.5f, 0.5f});
+  player_entity = ex_entity_new(scene, (vec3){0.5f, 0.6f, 0.5f});
   memcpy(player_entity->position, &spawn_locations, sizeof(vec3));
 
   // load sounds
@@ -127,6 +127,7 @@ void player_update(double dt)
       player_model->rotation[0] = -35.0f * (current_speed / 30.0f);
   }
 
+  // jump
   if (ex_keys_down[GLFW_KEY_SPACE] && (double)glfwGetTime()-player_ground_timer < 0.2) {
     player_entity->velocity[1] = 20.0f;
     if (player_wobble)
@@ -142,13 +143,42 @@ void player_update(double dt)
   scene->ortho_camera->position[0] = player_model->position[0];
   scene->ortho_camera->position[2] = player_model->position[2];
 
+  // meh didnt like this idea
   // check if we need 2 poo
-  if ((double)glfwGetTime() - player_poo_timer >= PLAYER_POO_TIME && player_poo_timer > 0.0 && player_entity->grounded) {
+  // if ((double)glfwGetTime() - player_poo_timer >= PLAYER_POO_TIME && player_poo_timer > 0.0 && player_entity->grounded) {
     // we gotta poop!!
-    vec3 pos = {player_entity->position[0], player_entity->position[1]+0.25f ,player_entity->position[2]};
-    bby_new(pos);
+    // vec3 pos = {player_entity->position[0], player_entity->position[1]+0.25f ,player_entity->position[2]};
+    // bby_new(pos);
 
-    player_poo_timer = (double)glfwGetTime();
+    // player_poo_timer = (double)glfwGetTime();
+  // }
+
+  // throw a bby chick
+  if (ex_keys_down[GLFW_KEY_F]) {
+    for (int i=0; i<MAX_BBY; i++) {
+      bby_t *c = bby_chickens[i];
+      if (c == NULL)
+        continue;
+      
+      // distance to bby
+      vec3_sub(temp, c->entity->position, player_entity->position);
+      float dist = vec3_len(temp);
+
+      if (dist <= 1.5f) {
+        // move it to us
+        memcpy(c->entity->position, player_entity->position, sizeof(vec3));
+      
+        // throw it
+        temp[0] = cos(rad(player_model->rotation[1]));
+        temp[2] = sin(rad(player_model->rotation[1]));
+        temp[1] = 1.2f;
+        vec3_scale(temp, temp, 15.0f);
+        vec3_add(c->entity->velocity, c->entity->velocity, temp);
+
+        ex_keys_down[GLFW_KEY_F] = 0;
+        break;
+      }
+    }
   }
 
   // check end region
@@ -156,7 +186,16 @@ void player_update(double dt)
   vec3_sub(r.min, player_entity->position, player_entity->radius);
   vec3_add(r.max, player_entity->position, player_entity->radius);
   if (level != NULL && ex_aabb_aabb(level->end_bounds, r)) {
-    // you win!
-    next_level();
+
+    // check if win
+    int win = 1;
+    for (int i=0; i<MAX_BBY; i++) {
+      if (bby_chickens[i] != NULL && !bby_chickens[i]->end)
+        win = 0;
+    }
+
+    // good job pleb
+    if (win)
+      next_level();
   }
 }

@@ -1,7 +1,7 @@
 #ifndef BBY_H
 #define BBY_H
 
-#define MAX_BBY 24
+#define MAX_BBY 32
 
 // BBY CHICKENZ
 
@@ -13,12 +13,12 @@ typedef struct {
   ex_model_t *model;
   ex_entity_t *entity;
   float move_speed, velocity;
-  int wobble, following;
+  int wobble, following, end, spawner;
 } bby_t;
 
 extern bby_t *bby_chickens[MAX_BBY];
 
-void bby_new(vec3 position);
+bby_t* bby_new(vec3 position);
 
 void bby_update(bby_t *c, double dt);
 

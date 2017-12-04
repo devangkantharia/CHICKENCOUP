@@ -62,8 +62,13 @@ vec3 calc_dir_light(dir_light l, sampler2D depth)
 
 void main()
 {
+  vec3 norm = normalize(normals);
+  vec3 dir  = normalize(vec3(0.0, 10.0, 0.0) - vec3(0.0, 0.0, 0.0));
+  float l   = max(dot(norm, dir), 0.0) * 0.2f;
+
   color = vec4(0.0);
   vec4 diff = texture(u_texture, uv) * 0.5f;
+  diff.rgb += (diff.rgb * l);
 
   if (diff.a < 0.5f)
     discard; 

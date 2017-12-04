@@ -1,6 +1,9 @@
 #include "iqm.h"
 #include "io.h"
+#include "bby.h"
 #include <string.h>
+
+extern ex_model_t *egg;
 
 ex_model_t *ex_iqm_load_model(ex_scene_t *scene, const char *path, int keep_vertices)
 {
@@ -240,6 +243,30 @@ ex_model_t *ex_iqm_load_model(ex_scene_t *scene, const char *path, int keep_vert
     // cheap and horrible bleh
     if (tex_name[0] == 'a') {
       m->is_lit = 0;
+    }
+
+    // egg spawn
+    if (tex_name[0] == '.') {
+      vec3 egg_spawn;
+      memcpy(egg_spawn, vert[ind[0]].position, sizeof(vec3));
+      egg = ex_iqm_load_model(scene, "data/egg.iqm", 0);
+      memcpy(egg->position, egg_spawn, sizeof(vec3));
+      ex_model_update(egg, 1.0f);
+
+      ex_mesh_destroy(m);
+      continue;
+    }
+
+    // chicken spawn
+    if (tex_name[0] == '@') {
+      vec3 spawn;
+      memcpy(spawn, vert[ind[0]].position, sizeof(vec3));
+      spawn[1] += 35.0f;
+      bby_t *c = bby_new(spawn);
+      c->spawner = 1;
+
+      ex_mesh_destroy(m);
+      continue;
     }
 
     // goal bounds

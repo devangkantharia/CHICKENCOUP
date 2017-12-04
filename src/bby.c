@@ -8,13 +8,16 @@
 const float friction = 50.0f;
 ex_scene_t *scene;
 extern int level_index;
+extern ex_model_t *level;
+extern int changing_level;
+extern int level_reset;
 extern void next_level();
 
 // bby_manager stuffs
 bby_t *bby_chickens[MAX_BBY];
 ex_source_t *sound_chirp[3] = {NULL, NULL, NULL};
 
-void bby_new(vec3 position)
+bby_t* bby_new(vec3 position)
 {
   // make a new bby
   bby_t* c = malloc(sizeof(bby_t));
@@ -31,6 +34,10 @@ void bby_new(vec3 position)
   c->velocity = 0.0f;
   c->move_speed = 0.0f;
 
+  // ez way of handling win condition
+  c->end = 0;
+  c->spawner = 0;
+
   // slightly randomy scaling for variation
   float s = (float)rand()/(float)RAND_MAX;
   c->model->scale *= 0.5f + MAX(0.0f, MIN(s, 0.5f));
@@ -40,7 +47,7 @@ void bby_new(vec3 position)
   for (int i=0; i<MAX_BBY; i++) {
     if (bby_chickens[i] == NULL) {
       bby_chickens[i] = c;
-      return;
+      return c;
     }
   }
 
@@ -53,7 +60,7 @@ void bby_new(vec3 position)
 
 void bby_update(bby_t *c, double dt)
 {
-  if (c == NULL || c->entity == NULL || c->model == NULL)
+  if (c == NULL || c->entity == NULL || c->model == NULL || c->end)
     return;
 
   // distance to player
@@ -73,7 +80,7 @@ void bby_update(bby_t *c, double dt)
   
   
   // set following if close
-  if (dist <= 15.0f)
+  if (dist <= 10.0f)
     c->following = 1;
   else
     c->following = 0;
@@ -95,11 +102,12 @@ void bby_update(bby_t *c, double dt)
     vec3_scale(temp, c->entity->velocity, friction * dt);
     vec3_sub(c->entity->velocity, c->entity->velocity, temp);
 
-    c->move_speed = 10.0f;
+    c->move_speed = 150.0f;
     c->model->rotation[0] = 0.0f;
   } else {
     // add gravity
     c->entity->velocity[1]  -= (50.0f * dt);
+    c->move_speed = 10.0f;
   }
 
   if (c->following) {
@@ -169,14 +177,35 @@ void bby_update(bby_t *c, double dt)
     }
   }
 
+  // check end region
+  ex_rect_t r;
+  vec3_sub(r.min, c->entity->position, c->entity->radius);
+  vec3_add(r.max, c->entity->position, c->entity->radius);
+  if (level != NULL && ex_aabb_aabb(level->end_bounds, r)) {
+    c->end = 1;
+    c->model->position[1] = -100.0f;
+    c->entity->position[1] = -100.0f;
+
+    // check if win
+    // int win = 1;
+    // for (int i=0; i<MAX_BBY; i++) {
+      // if (bby_chickens[i] != NULL && !bby_chickens[i]->end)
+        // win = 0;
+    // }
+
+    // good job pleb
+    // if (win)
+      // next_level();
+  }
+
   // check if we are to die
-  if (c->entity->position[1] < -150.0f) {
+  if (c->entity->position[1] < -150.0f && !changing_level) {
     if (level_index > 0)
       level_index--;
     
     player_entity->position[1] = -20.0f;
     player_entity->velocity[1] = 0.0f;
-    bby_manager_init(scene, 1);
+    level_reset = 1;
     next_level();
   }
 }

@@ -41,6 +41,12 @@ void ex_entity_collide_and_slide(ex_entity_t *entity, vec3 gravity)
   vec3_div(e_position, entity->packet.r3_position, entity->packet.e_radius);
   vec3_div(e_velocity, entity->packet.r3_velocity, entity->packet.e_radius);
 
+  // base_point += e_velocity * very_close_dist
+  // dumb fix lol
+  vec3 temp; 
+  vec3_scale(temp, entity->packet.e_velocity, VERY_CLOSE_DIST);
+  vec3_add(entity->packet.e_base_point, entity->packet.e_base_point, temp);
+
   // do velocity iteration
   entity->packet.depth = 0;
   ex_entity_collide_with_world(entity, final_position, e_position, e_velocity);

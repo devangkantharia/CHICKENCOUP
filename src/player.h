@@ -5,7 +5,7 @@
 #include "scene.h"
 #include "entity.h"
 
-#define PLAYER_POO_TIME 10.0
+#define PLAYER_POO_TIME 20.0
 
 extern ex_model_t *player_model;
 extern ex_entity_t *player_entity;
