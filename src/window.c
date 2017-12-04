@@ -141,7 +141,7 @@ EM_BOOL ex_ehandle_keys(int type, const EmscriptenKeyboardEvent *e, void *user_d
 EM_BOOL ex_ehandle_mouse(int type, const EmscriptenMouseEvent *e, void *user_data)
 {
   // prevent scrolling and stuff when focused
-  if (glfwGetInputMode(display.window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED)
+  if (glfwGetInputMode(display.window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
     return 1;
 
 // DONT BLOODY WORK DOES IT
