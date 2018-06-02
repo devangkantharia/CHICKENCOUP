@@ -1,6 +1,6 @@
 # CHICKEN COUP | LD40
 ##### This is my LudumDare 40 entry, [made using the web port of my engine 'exengine'.](https://github.com/exezin/exengine-web)
-##### [PLAY IT HERE](https://breadbrain.co.uk/Game/ChickenCoup)
+##### [PLAY IT HERE](https://exezin.itch.io/chicken-coup)
 ##### [LudumDare Page](https://ldjam.com/events/ludum-dare/40/chicken-coup)
 
 ## DEPENDS
